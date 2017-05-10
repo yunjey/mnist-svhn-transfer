@@ -43,7 +43,7 @@ class G12(nn.Module):
         out = F.leaky_relu(self.conv4(out), 0.05)    # ( " )
         
         out = F.leaky_relu(self.deconv1(out), 0.05)  # (?, 64, 16, 16)
-        out = F.leaky_relu(self.deconv2(out), 0.05)  # (?, 3, 32, 32)
+        out = F.tanh(self.deconv2(out))              # (?, 3, 32, 32)
         return out
     
 class G21(nn.Module):
@@ -70,14 +70,14 @@ class G21(nn.Module):
         out = F.leaky_relu(self.conv4(out), 0.05)    # ( " )
         
         out = F.leaky_relu(self.deconv1(out), 0.05)  # (?, 64, 16, 16)
-        out = F.leaky_relu(self.deconv2(out), 0.05)  # (?, 1, 32, 32)
+        out = F.tanh(self.deconv2(out))              # (?, 1, 32, 32)
         return out
     
 class D1(nn.Module):
     """Discriminator for mnist."""
     def __init__(self, conv_dim=64, use_labels=False):
         super(D1, self).__init__()
-        self.conv1 = conv(1, conv_dim, 4)
+        self.conv1 = conv(1, conv_dim, 4, bn=False)
         self.conv2 = conv(conv_dim, conv_dim*2, 4)
         self.conv3 = conv(conv_dim*2, conv_dim*4, 4)
         n_out = 11 if use_labels else 1
@@ -94,7 +94,7 @@ class D2(nn.Module):
     """Discriminator for svhn."""
     def __init__(self, conv_dim=64, use_labels=False):
         super(D2, self).__init__()
-        self.conv1 = conv(3, conv_dim, 4)
+        self.conv1 = conv(3, conv_dim, 4, bn=False)
         self.conv2 = conv(conv_dim, conv_dim*2, 4)
         self.conv3 = conv(conv_dim*2, conv_dim*4, 4)
         n_out = 11 if use_labels else 1
