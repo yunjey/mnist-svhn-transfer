@@ -45,6 +45,7 @@ python main.py --use_labels=True --use_reconst_loss=False
 ##### 1) CycleGAN
 
 ##### 2) SGAN
+![alt text](gif/sgan-s-m.gif)
 
 #### From MNIST to SVHN
 
