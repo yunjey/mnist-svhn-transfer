@@ -41,11 +41,14 @@ python main.py --use_labels=True --use_reconst_loss=False
 ## Results
 
 #### 1) CycleGAN
+From SVHN to MNIST            |  From MNIST to SVHN
+:-------------------------:|:-------------------------:
+![alt text](gif/cycle-s-m.gif)  |  ![alt text](gif/cycle-m-s.gif)
 
 #### 2) SGAN
 From SVHN to MNIST            |  From MNIST to SVHN
 :-------------------------:|:-------------------------:
-![alt text](gif/sgan-s-m.gif)  |  ![alt text](gif/sgan-s-m.gif)
+![alt text](gif/sgan-s-m.gif)  |  ![alt text](gif/sgan-m-s.gif)
 
 
 
