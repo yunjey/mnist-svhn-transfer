@@ -13,7 +13,9 @@ from model import D1, D2
 
 
 class Solver(object):
-    def __init__(self, config):
+    def __init__(self, config, svhn_loader, mnist_loader):
+        self.svhn_loader = svhn_loader
+        self.mnist_loader = mnist_loader
         self.g12 = None
         self.g21 = None
         self.d1 = None
@@ -32,14 +34,12 @@ class Solver(object):
         self.lr = config.lr
         self.log_step = config.log_step
         self.sample_step = config.sample_step
-        self.mnist_path = config.mnist_path
-        self.svhn_path = config.svhn_path
         self.sample_path = config.sample_path
         self.model_path = config.model_path
         self.build_model()
         
     def build_model(self):
-        """Builds generator and discriminator."""
+        """Builds a generator and a discriminator."""
         self.g12 = G12(conv_dim=self.g_conv_dim)
         self.g21 = G21(conv_dim=self.g_conv_dim)
         self.d1 = D1(conv_dim=self.d_conv_dim, use_labels=self.use_labels)
@@ -57,33 +57,10 @@ class Solver(object):
             self.d1.cuda()
             self.d2.cuda()
     
-    def load_svhn(self, image_dir):
-        print ('loading svhn image dataset..')
-        image_file = 'train_32x32.mat' 
-        image_dir = os.path.join(image_dir, image_file)
-        svhn = scipy.io.loadmat(image_dir)
-        images = np.transpose(svhn['X'], [3, 0, 1, 2]) / 127.5 - 1
-        labels = svhn['y'].reshape(-1)
-        labels[np.where(labels==10)] = 0
-        print ('finished loading svhn image dataset..!')
-        return images.transpose(0, 3, 1, 2).astype(np.float32), labels.astype(np.long)
-
-    def load_mnist(self, image_dir):
-        print ('loading mnist image dataset..')
-        image_file = 'train.pkl'
-        image_dir = os.path.join(image_dir, image_file)
-        with open(image_dir, 'rb') as f:
-            mnist = pickle.load(f)
-        images = mnist['X'] / 127.5 - 1
-        labels = mnist['y']
-        print ('finished loading mnist image dataset..!')
-        return images.transpose(0, 3, 1, 2).astype(np.float32), labels.astype(np.long)
-    
     def merge_images(self, sources, targets, k=10):
         _, _, h, w = sources.shape
         row = int(np.sqrt(self.batch_size))
         merged = np.zeros([3, row*h, row*w*2])
-
         for idx, (s, t) in enumerate(zip(sources, targets)):
             i = idx // row
             j = idx % row
@@ -93,8 +70,6 @@ class Solver(object):
     
     def to_var(self, x):
         """Converts numpy to variable."""
-        if isinstance(x, np.ndarray):
-            x = torch.from_numpy(x)
         if torch.cuda.is_available():
             x = x.cuda()
         return Variable(x)
@@ -111,35 +86,37 @@ class Solver(object):
         self.d_optimizer.zero_grad()
 
     def train(self):
-        # load mnist and svhn dataset
-        mnist_images, mnist_labels = self.load_mnist(self.mnist_path)
-        svhn_images, svhn_labels = self.load_svhn(self.svhn_path)
+        svhn_iter = iter(self.svhn_loader)
+        mnist_iter = iter(self.mnist_loader)
+        iter_per_epoch = min(len(svhn_iter), len(mnist_iter))
         
         # fixed mnist and svhn for sampling
-        fixed_mnist = self.to_var(mnist_images[:self.batch_size])
-        fixed_svhn = self.to_var(svhn_images[:self.batch_size])
+        fixed_svhn = self.to_var(svhn_iter.next()[0])
+        fixed_mnist = self.to_var(mnist_iter.next()[0])
         
-        # loss if use_labels
+        # loss if use_labels = True
         criterion = nn.CrossEntropyLoss()
         
         for step in range(self.train_iters+1):
-            i = step % int(svhn_images.shape[0] / self.batch_size)
-            svhn = self.to_var(svhn_images[i*self.batch_size:(i+1)*self.batch_size])
-            s_labels =  self.to_var(svhn_labels[i*self.batch_size:(i+1)*self.batch_size])
+            # reset data_iter for each epoch
+            if (step+1) % iter_per_epoch == 0:
+                mnist_iter = iter(self.mnist_loader)
+                svhn_iter = iter(self.svhn_loader)
             
-            j = step % int(mnist_images.shape[0] / self.batch_size)
-            mnist = self.to_var(mnist_images[j*self.batch_size:(j+1)*self.batch_size])
-            m_labels = self.to_var(mnist_labels[j*self.batch_size:(j+1)*self.batch_size])
-            mnist_fake_labels = self.to_var(
-                torch.Tensor([self.num_classes]*mnist.size(0)).long())
-            svhn_fake_labels = self.to_var(
-                torch.Tensor([self.num_classes]*svhn.size(0)).long())
+            # load svhn and mnist dataset
+            svhn, s_labels = svhn_iter.next() 
+            svhn, s_labels = self.to_var(svhn), self.to_var(s_labels).long().squeeze()
+            mnist, m_labels = mnist_iter.next() 
+            mnist, m_labels = self.to_var(mnist), self.to_var(m_labels)
+
+            if self.use_labels:
+                mnist_fake_labels = self.to_var(
+                    torch.Tensor([self.num_classes]*svhn.size(0)).long())
+                svhn_fake_labels = self.to_var(
+                    torch.Tensor([self.num_classes]*mnist.size(0)).long())
+            
             #============ train D ============#
-            #for p in self.d1.parameters():
-            #    p.data.clamp_(-0.01, 0.01)
-            #for p in self.d2.parameters():
-            #    p.data.clamp_(-0.01, 0.01)
-                 
+            
             # train with real images
             self.reset_grad()
             out = self.d1(mnist)
@@ -214,7 +191,6 @@ class Solver(object):
             g_loss.backward()
             self.g_optimizer.step()
             
-                
             # print the log info
             if (step+1) % self.log_step == 0:
                 print('Step [%d/%d], d_real_loss: %.4f, d_mnist_loss: %.4f, d_svhn_loss: %.4f, '
@@ -231,14 +207,12 @@ class Solver(object):
                 svhn , fake_svhn = self.to_data(fixed_svhn), self.to_data(fake_svhn)
                 
                 merged = self.merge_images(mnist, fake_svhn)
-                path = os.path.join(self.sample_path, 'sample-%d-m-s.png' 
-                                    %(step+1))
+                path = os.path.join(self.sample_path, 'sample-%d-m-s.png' %(step+1))
                 scipy.misc.imsave(path, merged)
                 print ('saved %s' %path)
                 
                 merged = self.merge_images(svhn, fake_mnist)
-                path = os.path.join(self.sample_path, 'sample-%d-s-m.png' 
-                                    %(step+1))
+                path = os.path.join(self.sample_path, 'sample-%d-s-m.png' %(step+1))
                 scipy.misc.imsave(path, merged)
                 print ('saved %s' %path)
             
@@ -252,6 +226,3 @@ class Solver(object):
                 torch.save(self.g21.state_dict(), g21_path)
                 torch.save(self.d1.state_dict(), d1_path)
                 torch.save(self.d2.state_dict(), d2_path)
-            
-    def sample(self):
-        pass

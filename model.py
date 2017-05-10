@@ -10,7 +10,6 @@ def deconv(c_in, c_out, k_size, stride=2, pad=1, bn=True):
         layers.append(nn.BatchNorm2d(c_out))
     return nn.Sequential(*layers)
 
-
 def conv(c_in, c_out, k_size, stride=2, pad=1, bn=True):
     """Custom convolutional layer for simplicity."""
     layers = []
