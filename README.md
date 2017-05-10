@@ -27,12 +27,6 @@ chmod +x download.sh
 ./download.sh
 ```
 
-#### Resize MNIST dataset to 32x32
-
-```bash
-$ python prepro.py
-```
-
 #### Train the model
 
 ##### 1) CycleGAN
