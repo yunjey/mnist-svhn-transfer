@@ -1,6 +1,6 @@
 # MNIST-to-SVHN and SVHN-to-MNIST
 
-Minimal PyTorch implementation of [CycleGAN]() and [SGAN]() for domain transfer.
+Minimal PyTorch implementation of [CycleGAN](https://arxiv.org/pdf/1703.10593.pdf) and [SGAN](https://arxiv.org/abs/1606.01583) for domain transfer.
 
 ![alt text](gif/cyclegan.png)
 
