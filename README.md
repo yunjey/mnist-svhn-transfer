@@ -1,8 +1,17 @@
-## MNIST-to-SVHN and SVHN-to-MNIST
+# MNIST-to-SVHN and SVHN-to-MNIST
+
+Minimal PyTorch implementation of [CycleGAN]() and [SGAN]() for domain transfer.
+
+![alt text](gif/cyclegan.png)
+
+<br>
 
 
+## Prerequites
+* [PyTorch](http://pytorch.org/)
 
 
+<br>
 
 ## Usage
 
@@ -38,17 +47,21 @@ python main.py --use_labels=False --use_reconst_loss=True
 ```bash
 python main.py --use_labels=True --use_reconst_loss=False
 ```
+<br>
+
 ## Results
 
 #### 1) CycleGAN
 From SVHN to MNIST            |  From MNIST to SVHN
 :-------------------------:|:-------------------------:
 ![alt text](gif/cycle-s-m.gif)  |  ![alt text](gif/cycle-m-s.gif)
+![alt text](gif/cycle-s-m.png)  |  ![alt text](gif/cycle-m-s.png)
 
 #### 2) SGAN
 From SVHN to MNIST            |  From MNIST to SVHN
 :-------------------------:|:-------------------------:
 ![alt text](gif/sgan-s-m.gif)  |  ![alt text](gif/sgan-m-s.gif)
+![alt text](gif/sgan-s-m.png)  |  ![alt text](gif/sgan-m-s.png)
 
 
 
