@@ -30,7 +30,6 @@ chmod +x download.sh
 #### Train the model
 
 ##### 1) CycleGAN
-
 ```bash
 python main.py --use_labels=False --use_reconst_loss=True
 ```
@@ -44,7 +43,8 @@ python main.py --use_labels=True --use_reconst_loss=False
 
 ## Results
 
-#### 1) CycleGAN
+#### 1) CycleGAN (should be re-uploaded)
+
 From SVHN to MNIST            |  From MNIST to SVHN
 :-------------------------:|:-------------------------:
 ![alt text](gif/cycle-s-m.gif)  |  ![alt text](gif/cycle-m-s.gif)
