@@ -4,11 +4,10 @@ Minimal PyTorch implementation of [CycleGAN]() and [SGAN]() for domain transfer.
 
 ![alt text](gif/cyclegan.png)
 
-<br>
-
 
 ## Prerequites
-* [PyTorch](http://pytorch.org/)
+* [Python 3.5](https://www.continuum.io/downloads)
+* [PyTorch 0.1.12](http://pytorch.org/)
 
 
 <br>
