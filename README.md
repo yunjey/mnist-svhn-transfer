@@ -17,8 +17,8 @@ Minimal PyTorch implementation of [CycleGAN](https://arxiv.org/pdf/1703.10593.pd
 #### Clone the repository
 
 ```bash
-$ git clone https://github.com/yunjey/mnist-svhn-mnist.git
-$ cd mnist-svhn-mnist/
+$ git clone https://github.com/yunjey/mnist-svhn-transfer.git
+$ cd mnist-svhn-transfer/
 ```
 
 #### Download the dataset
