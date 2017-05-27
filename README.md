@@ -23,21 +23,21 @@ $ cd mnist-svhn-transfer/
 
 #### Download the dataset
 ```bash
-chmod +x download.sh
-./download.sh
+$ chmod +x download.sh
+$ ./download.sh
 ```
 
 #### Train the model
 
 ##### 1) CycleGAN
 ```bash
-python main.py --use_labels=False --use_reconst_loss=True
+$ python main.py --use_labels=False --use_reconst_loss=True
 ```
 
 ##### 2) SGAN
 
 ```bash
-python main.py --use_labels=True --use_reconst_loss=False
+$ python main.py --use_labels=True --use_reconst_loss=False
 ```
 <br>
 
